@@ -1,3 +1,8 @@
 <view class="container" style="text-align:center;padding:0;margin:0;">
+    <view style="width:100%;">
+        <span bindtap="add" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:green;">+5%</span>
+        <span bindtap="refund" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:red;">-5%</span>
+        <span bindtap="reload" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:blue;">reload</span>
+    </view>
     <canvas wx:for="{{sizeList}}" wx:key="s" wx:for-item="size" canvas-id="progressBar{{size.n}}" style="width:{{size.w}}px;height:{{size.h}}px;"></canvas>
 </view>
