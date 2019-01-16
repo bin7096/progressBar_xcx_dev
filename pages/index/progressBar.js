@@ -108,23 +108,24 @@ function verifyType(status, args) {
  * @param {object} pbObj        参数集
  * @param {int}    widthPercent 宽度百分比
  * @param {int}    num          等份数
+ * @param {int}    index        对应size下标
  */
-function cricleStyle(obj, pbObj, widthPercent, num) {
+function cricleStyle(obj, pbObj, widthPercent, num, index) {
     pbObj['pi']       = pi;
     pbObj['excricle'] = Math.floor(pbObj['width'] * (widthPercent / 100) / 2); //外圆半径
     pbObj['incricle'] = Math.floor(pbObj['excricle'] * 0.9);                   //内圆半径
     pbObj['fontsize'] = Math.floor(pbObj['excricle'] * 0.5);                   //文字大小
     pbObj['center']   = pbObj['excricle'];                                     //圆心位置（相对画布左上角，向右向下偏移多少）
+
+    let size = obj.data.sizeList;
+    size[index].w = size[index].h = pbObj.excricle * 2;
     obj.setData({
-        w : pbObj.excricle * 2,
-        h : pbObj.excricle * 2
+        sizeList : size
     });
     
     /*canvas开始绘制*/
     let ctx = pbObj['ctx'] = wx.createCanvasContext(pbObj.canvas_id);
     ctx.translate(0.5, 0.5);  //解决canvas线条模糊问题
-    //按照window.devicePixelRatio输出设备dpi比例放大绘制图像（解决锯齿问题）
-    // ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     pbObj['ds'] = annularStart(ctx, pbObj, num);
     return pbObj;
@@ -160,8 +161,9 @@ function annularStart(ctx, pbObj, num){
  * @param {string} barcolor     进度条颜色
  * @param {string} canvas_id    画布ID属性
  * @param {int}    num          等份数
+ * @param {int}    index        对应size下标
  */
-function init(obj, type, widthPercent, percent, bgcolor, barcolor, canvas_id, num) {
+function init(obj, type, widthPercent, percent, bgcolor, barcolor, canvas_id, num, index) {
     
     //验证传入参数
     let bool = verifyType('init', [type, widthPercent, percent, bgcolor, barcolor, num]);
@@ -181,7 +183,7 @@ function init(obj, type, widthPercent, percent, bgcolor, barcolor, canvas_id, nu
 
     switch(type){
         case "pureColorAnnular":
-            pbObj = cricleStyle(obj, pbObj, widthPercent, num);
+            pbObj = cricleStyle(obj, pbObj, widthPercent, num, index);
             break;
     }
     //返回参数集，方便下次调用

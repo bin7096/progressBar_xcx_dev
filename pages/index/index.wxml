@@ -1,3 +1,3 @@
 <view class="container" style="text-align:center;padding:0;margin:0;">
-    <canvas canvas-id="progressBar" style="width:{{w}}px;height:{{h}}px;"></canvas>
+    <canvas wx:for="{{sizeList}}" wx:key="s" wx:for-item="size" canvas-id="progressBar{{size.n}}" style="width:{{size.w}}px;height:{{size.h}}px;"></canvas>
 </view>
