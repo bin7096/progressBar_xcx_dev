@@ -6,6 +6,13 @@ const pbType   = [
     'pureColorAnnular'
 ];
 
+var throwError = {
+    content:"ProgressBar.js Arguments '%arg%' Error!%detail%",
+    init:function(arg, detail){
+        console.error(this.content.replace("%arg%", arg).replace("%detail%", detail));return;
+    }
+}
+
 function getWinSize() {
     let size = {
         width  : null,  //屏幕宽度
@@ -21,7 +28,7 @@ function getWinSize() {
 
 /**
  * verifyType 校验参数
- * @param  {string}  status 当前调用状态
+ * @param  {String}  status 当前调用状态
  * @param  {array}   args   校验参数s
  * @return {boolean}
  */
@@ -104,11 +111,11 @@ function verifyType(status, args) {
 
 /**
  * 开始绘制canvas
- * @param {object} obj          调用此方法的对象
- * @param {object} pbObj        参数集
- * @param {int}    widthPercent 宽度百分比
- * @param {int}    num          等份数
- * @param {int}    index        对应size下标
+ * @param {Object} obj          调用此方法的对象
+ * @param {Object} pbObj        参数集
+ * @param {Number} widthPercent 宽度百分比
+ * @param {Number} num          等份数
+ * @param {Number} index        对应size下标
  */
 function cricleStyle(obj, pbObj, widthPercent, num, index) {
     pbObj['pi']       = pi;
@@ -133,9 +140,9 @@ function cricleStyle(obj, pbObj, widthPercent, num, index) {
 
 /**
  * 
- * @param {object} ctx   画布对象
- * @param {object} pbObj 参数集
- * @param {int}    num   等份数
+ * @param {Object} ctx   画布对象
+ * @param {Object} pbObj 参数集
+ * @param {Number} num   等份数
  */
 function annularStart(ctx, pbObj, num){
 
@@ -143,8 +150,10 @@ function annularStart(ctx, pbObj, num){
     let countByPB = 1;
     let ds = setInterval(function() {
         if (countByPB >= num) {clearInterval(ds);}
-        let eqNum     = pbObj['percent'] / num * countByPB;
-        let stopAngle = eqNum / 100 * 360;
+        //处理超过100的百分比值
+        let initNum   = (pbObj.percent - (pbObj.percent % 100)) / 100;
+        let eqNum     = pbObj.percent / num * countByPB;
+        let stopAngle = (eqNum / 100 - initNum) * 360;
         progressBarStart.pureCricle(pbObj, eqNum, stopAngle);
         countByPB ++;
     }, 10);
@@ -153,15 +162,15 @@ function annularStart(ctx, pbObj, num){
 
 /**
  * 初始化
- * @param {object} obj          调用此方法的对象
- * @param {string} type         进度条类型
- * @param {int}    widthPercent 宽度百分比
- * @param {int}    percent      进度百分比
- * @param {string} bgcolor      背景色
- * @param {string} barcolor     进度条颜色
- * @param {string} canvas_id    画布ID属性
- * @param {int}    num          等份数
- * @param {int}    index        对应size下标
+ * @param {Object} obj          调用此方法的对象
+ * @param {String} type         进度条类型
+ * @param {Number} widthPercent 宽度百分比
+ * @param {Number} percent      进度百分比
+ * @param {String} bgcolor      背景色
+ * @param {String} barcolor     进度条颜色
+ * @param {String} canvas_id    画布ID属性
+ * @param {Number} num          等份数
+ * @param {Number} index        对应size下标
  */
 function init(obj, type, widthPercent, percent, bgcolor, barcolor, canvas_id, num, index) {
     
@@ -190,6 +199,142 @@ function init(obj, type, widthPercent, percent, bgcolor, barcolor, canvas_id, nu
     return pbObj;
 }
 
+/**
+ * 增加
+ * @param {Object} pbObj      参数集
+ * @param {Number} endPercent 结束进度值
+ * @param {Number} num        等份数
+ */
+function add(pbObj, endPercent, num) {
+
+    //校验开始进度值是否大于结束进度值
+    if (pbObj['percent'] >= endPercent) {
+        throwError.init('endPercent', '结束进度值必须大于原有进度值');return;
+    }
+
+    //校验参数类型
+    let bool = verifyType('add', [endPercent, num]);
+    if (!bool) {
+        return;
+    }
+
+    //重新绘制进度条
+    let countByPB = 1;
+    clearInterval(pbObj['ds']);
+
+    //开始百分比值
+    let startPercent = pbObj['percent'];
+    //增加百分比值
+    let addPercent = endPercent - pbObj['percent'];
+    switch (pbObj['type']) {
+        case 'pureColorAnnular':
+            let ds = setInterval(function() {
+                if (countByPB >= num) {clearInterval(ds);}
+                //处理超过100的百分比值
+                let addNum = (endPercent - (endPercent % 100)) / 100;
+                let eqNum = addPercent / num * countByPB + startPercent; //等份百分比值
+                let stopAngle = eqNum / 100 * 360 - (addNum * 360);      //结束角度
+                progressBarStart.pureCricle(pbObj, eqNum, stopAngle);
+                countByPB ++;
+            }, 10);
+            pbObj['ds'] = ds;
+            break;
+        default :
+            break;
+    }
+    //覆盖参数集中的百分比
+    pbObj['percent'] = endPercent;
+    return pbObj;
+
+}
+
+/**
+ * 减少
+ * @param {Object} pbObj      参数集
+ * @param {Number} endPercent 结束进度值
+ * @param {Number} num        等份数
+ */
+function refund(pbObj, endPercent, num) {
+        
+    //校验开始进度值是否小于结束进度值
+    if (pbObj['percent'] <= endPercent) {
+        throwError.init('endPercent', '结束进度值必须小于原有进度值');return;
+    }
+
+    //校验参数类型
+    let bool = verifyType('refund', [endPercent, num]);
+    if (!bool) {
+        return;
+    }
+
+    //重新绘制进度条（底图除外）
+    let countByPB = 1;
+    clearInterval(pbObj['ds']);
+
+    //开始百分比值
+    let startPercent = pbObj['percent'];
+    //减少百分比值
+    let refundPercent = pbObj['percent'] - endPercent;
+    switch (pbObj['type']) {
+        case 'pureColorAnnular':
+            let ds = setInterval(function() {
+                if (countByPB >= num) {clearInterval(ds);}
+                //处理超过100的百分比值
+                let rfNum = (endPercent - (endPercent % 100)) / 100;
+                let eqNum = startPercent - (refundPercent / num * countByPB); //等份百分比值
+                let stopAngle = (eqNum / 100 - rfNum) * 360;                  //结束角度
+                progressBarStart.pureCricle(pbObj, eqNum, stopAngle);
+                countByPB ++;
+            }, 10);
+            pbObj['ds'] = ds;
+            break;
+        default :
+            break;
+    }
+    //覆盖参数集中的百分比
+    pbObj['percent'] = endPercent;
+    return pbObj;
+}
+
+/**
+ * 重载
+ * @param {Array:Object} pbObjs 参数集（多个，数组形式）
+ * @param {Array:Number} nums   等份数（多个，数组形式）
+ */
+function reload(pbObjs, nums){
+
+    //校验参数集数组和等份数数组长度是否一致
+    if (pbObjs.length !== nums.length) {
+        throwError.init('"pbObjs" and "nums"', "长度不一致");return;
+    }
+
+    //校验参数类型
+    let bool = verifyType('reload', [nums]);
+    if (!bool) {
+        return;
+    }
+
+    //重新绘制多个canvas（包括底图）
+    for (let i = 0; i < pbObjs.length; i++) {
+        clearInterval(pbObjs[i]['ds']);
+        switch (pbObjs[i]['type']) {
+            case 'pureColorAnnular':
+                /*canvas开始绘制*/
+                let ctx = pbObjs[i]['ctx'] = wx.createCanvasContext(pbObjs[i].canvas_id);
+                ctx.translate(0.5, 0.5);  //解决canvas线条模糊问题
+                pbObjs[i]['ds'] = annularStart(ctx, pbObjs[i], nums[i]);
+                break;
+            default:
+                break;
+        }
+    }
+
+    return pbObjs;
+}
+
 module.exports = {
-    init : init
+    init   : init,
+    add    : add,
+    refund : refund,
+    reload : reload
 }

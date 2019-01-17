@@ -1,8 +1,11 @@
 <view class="container" style="text-align:center;padding:0;margin:0;">
-    <view style="width:100%;">
-        <span bindtap="add" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:green;">+5%</span>
-        <span bindtap="refund" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:red;">-5%</span>
+    <view style="width:100%;height:3rem;"></view>
+    <cover-view style="width:100%;">
+        <canvas wx:for="{{sizeList}}" wx:key="s" wx:for-item="size" canvas-id="progressBar{{size.n}}" style="width:{{size.w}}px;height:{{size.h}}px;margin:1rem auto;"></canvas>
+    </cover-view>
+    <view style="width:100%;position:fixed;top:0;left:0;">
+        <span bindtap="add" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:green;">+15%</span>
+        <span bindtap="refund" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:red;">-15%</span>
         <span bindtap="reload" style="display:inline-block;width:33.3%;height:2rem;line-height:2rem;color:#FFF;text-align:center;background-color:blue;">reload</span>
     </view>
-    <canvas wx:for="{{sizeList}}" wx:key="s" wx:for-item="size" canvas-id="progressBar{{size.n}}" style="width:{{size.w}}px;height:{{size.h}}px;"></canvas>
 </view>
